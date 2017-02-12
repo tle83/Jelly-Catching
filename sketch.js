@@ -1,24 +1,22 @@
 var guy = [];
-var count = 10;
-var jellyCount = 10;
-var timer = 10;
-var seconds;
-var startTime;
+var count = 15;
+var timer = 30;
+var seconds, startTime;
 var menuScreen = false;
 var gameOverScreen = false;
 var playScreen = false;
 var aboutScreen = false;
-var c;
-var clickJelly, menuJelly, captureJelly, arrow;
+var playTime = false;
+var clickJelly, menuJelly, captureJelly, arrow, jellyCount, jellyCountLeft, speed;
 
 function preload(){
 	for (var i = 0; i < count; i++){
-		guy[i] = new Walker("Jelly.png", random(40, 640), random(480), random([-1, +1]));
+		guy[i] = new Walker("images/Jelly.png", random(40, 720), random(480), random([-1, +1]));
 	}
-	clickJelly = loadImage("clickJelly.png");
-	menuJelly = loadImage("menuJelly.png");
-	arrow = loadImage("arrow.png");
-	captureJelly = loadImage("captureJelly.png");
+	clickJelly = loadImage("images/clickJelly.png");
+	menuJelly = loadImage("images/menuJelly.png");
+	arrow = loadImage("images/arrow.png");
+	captureJelly = loadImage("images/captureJelly.png");
 }
 
 function setup() {
@@ -27,15 +25,17 @@ function setup() {
 
 	startTime = millis()/1000 + timer;
 
-	c = color(76, 155, 210);
+	jellyCount = 0;
+	jellyCountLeft = count;
+	speed = 6;
+
 	menuScreen = true;
 }
 
 function draw(){
-	//menu screen will always come first
+	//menu screen will always appear first
 	if(menuScreen){
-		background(c);
-
+		background(76, 155, 210);
 		image(menuJelly, 720/3, 250, 360, 360);
 
 		//title
@@ -61,14 +61,14 @@ function draw(){
 
 		text("How to play", 720/8, 70);
 		textSize(20);		
-		text("These Jellyfish accidentally washed up by the shore! \nHelp catch them inside jars to release in open water!\nClick on each jellyfish to trap inside a jar.",
+		text("These Jellyfish accidentally washed up by the shore. \nHelp catch them inside jars to release them back in open water!",
 		720/8, 100);
 
 		image(clickJelly, 720/4, 320, 128, 128);
 		image(arrow, 720/2, 320, 288/3, 288/3);
 		image(captureJelly, 720/1.3, 320, 160, 80, 320, 0, 160, 80);
 
-		text("Click on a jellyfish to catch them.\nThey will try to move away faster with every catch", 
+		text("Click on a jellyfish to catch them.\nThey will try to move away faster with every catch.", 
 		720/8, 220);
 
 		triangle(30, 425, 58, 395, 58, 450);
@@ -77,6 +77,7 @@ function draw(){
 
 	//if play button is pressed, load play screen
 	if(playScreen){
+		
 		background(0, 255, 255);
 
 		for (var i = 0; i < count; i++){
@@ -88,7 +89,7 @@ function draw(){
 		strokeWeight(4);
 		textSize(20);
 		fill(0);
-		text("Jellies: " + jellyCount, 10, 20);
+		text("Jellyfish left: " + jellyCountLeft, 10, 20);
 
 		//Timer counter displayed under the bug counter
 		stroke(255);
@@ -96,19 +97,21 @@ function draw(){
 		textSize(20);
 		fill(0);
 
-		seconds = startTime - millis()/1000;
-		if(seconds < 0){
-			//once the timer runs out, the game over screen will appear
-			gameOverScreen = true;
-		}
-		else{
-			text("Timer:  " + round(seconds), 10, 40);
+		if(playTime){
+			seconds = startTime - millis()/1000;
+			if(seconds < 0 || count == 0){
+				//once the timer runs out, the game over screen will appear
+				gameOverScreen = true;
+			}
+			else{
+				text("Timer:  " + round(seconds), 10, 40);
+			}
 		}
 	
 	}
 
 	//load game over screen immediately after timer runs out
-	if(gameOverScreen){
+	if(gameOverScreen || jellyCountLeft <= 0){
 		menuScreen = false;		
 		background(76, 155, 210);
 		textSize(50);
@@ -122,6 +125,8 @@ function draw(){
 		rect(720/2.52, 300, 150, 50);
 		fill(255);
 		text("Menu", 720/2.2, 335);
+
+		text("You've captured: " + jellyCount + " Jellyfish", 720/3.7, 480/2);
 	}
 
 }
@@ -129,11 +134,11 @@ function draw(){
 function mousePressed(){
 	for(var i = 0; i < count; i++){
 		guy[i].grab(mouseX, mouseY);
-		//guy[i].squish(mouseX, mouseY);
 	}
 	if((mouseX >= 720/1.5) && (mouseX <= 720/1.5 + 150) &&
 		(mouseY >= 160) && (mouseY <= 160 + 50)){
 			playScreen = true;
+			playTime = true;
 	}
 	else if((playScreen == false) && ((mouseX >= 720/1.5) && (mouseX <= 720/1.5 + 150) &&
 		(mouseY >= 260) && (mouseY <= 260 + 50))){
@@ -149,22 +154,6 @@ function mousePressed(){
 	}
 }
 
-function mouseReleased(){
-	for(var i = 0; i < count; i++){
-		guy[i].drop();
-	}
-}
-
-function mouseDragged(){
-	for(var i = 0; i < count; i++){
-		guy[i].drag(mouseX, mouseY);
-	}
-}
-
-//define an object
-//when defining an object, capitalize the name
-//this function is called when creating
-//a new walking person
 function Walker(imageName, x, y, moving){
 	this.spritesheet = loadImage(imageName);
 	this.frame = 0;
@@ -183,7 +172,7 @@ function Walker(imageName, x, y, moving){
 		}
 
 		if(this.moving == 0){
-			image(this.spritesheet, 0, 0, 80, 80, 0, 0, 80, 80);
+			image(captureJelly, 0, 0, 160, 80, 320, 0, 160, 80);		
 		}
 		else{
 			if(this.frame == 0)
@@ -203,8 +192,9 @@ function Walker(imageName, x, y, moving){
 			if(this.frame == 7)
 				image(this.spritesheet, 0, 0, 80, 80, 640, 0, 80, 80);
 			if(frameCount % 6 == 0){
-				this.frame = (this.frame + 1) % 7;
-				this.x = this.x + 6 * this.moving;
+				this.frame = (this.frame + 1) % 6;
+				//this line determines the speed of the frames
+				this.x = this.x + speed * this.moving;
 				if(this.x < 40 || this.x > width - 40){
 					this.moving = -this.moving;
 					this.facing = -this.facing;
@@ -224,6 +214,9 @@ function Walker(imageName, x, y, moving){
 			this.mouseY = y;
 			this.initialX = this.x;
 			this.initialY = this.y;
+			speed += 3;
+			jellyCount += 1;
+			jellyCountLeft = jellyCountLeft - 1;
 		}
 	}
 
@@ -240,22 +233,11 @@ function Walker(imageName, x, y, moving){
 
 	this.stop = function(){
 		this.moving = 0;
-		this.frame = 3;
 	}
 
 	this.go = function(direction){
 		this.moving = direction;
 		this.facing = direction;
-	}
-
-	this.squish = function(x,y){
-		if(this.x - 40 < x && x < this.x + 40 &&
-		this.y - 40 < y && y < this.y + 40){
-			this.stop();
-			this.mouseX = x;
-			this.mouseY = y;
-			
-		}
 	}
 }
 
