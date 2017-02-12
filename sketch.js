@@ -1,19 +1,24 @@
 var guy = [];
 var count = 10;
 var jellyCount = 10;
-var timer = 3;
+var timer = 10;
 var seconds;
 var startTime;
-var menuScreen = true;
+var menuScreen = false;
 var gameOverScreen = false;
 var playScreen = false;
 var aboutScreen = false;
 var c;
+var clickJelly, menuJelly, captureJelly, arrow;
 
 function preload(){
 	for (var i = 0; i < count; i++){
 		guy[i] = new Walker("Jelly.png", random(40, 640), random(480), random([-1, +1]));
 	}
+	clickJelly = loadImage("clickJelly.png");
+	menuJelly = loadImage("menuJelly.png");
+	arrow = loadImage("arrow.png");
+	captureJelly = loadImage("captureJelly.png");
 }
 
 function setup() {
@@ -22,13 +27,16 @@ function setup() {
 
 	startTime = millis()/1000 + timer;
 
-	c = color(155, 0, 155);
+	c = color(76, 155, 210);
+	menuScreen = true;
 }
 
 function draw(){
 	//menu screen will always come first
 	if(menuScreen){
 		background(c);
+
+		image(menuJelly, 720/3, 250, 360, 360);
 
 		//title
 		textSize(40);
@@ -44,7 +52,27 @@ function draw(){
 		fill(255);
 		text("Play", 720/1.39, 200);
 		text("About", 720/1.43, 300);
+	}
 
+	//if about button is pressed, load how to play screen
+	if(aboutScreen == true){
+		background(30, 155, 210);
+		//background(c);
+
+		text("How to play", 720/8, 70);
+		textSize(20);		
+		text("These Jellyfish accidentally washed up by the shore! \nHelp catch them inside jars to release in open water!\nClick on each jellyfish to trap inside a jar.",
+		720/8, 100);
+
+		image(clickJelly, 720/4, 320, 128, 128);
+		image(arrow, 720/2, 320, 288/3, 288/3);
+		image(captureJelly, 720/1.3, 320, 160, 80, 320, 0, 160, 80);
+
+		text("Click on a jellyfish to catch them.\nThey will try to move away faster with every catch", 
+		720/8, 220);
+
+		triangle(30, 425, 58, 395, 58, 450);
+		text("Back \nto Menu", 70, 418);
 	}
 
 	//if play button is pressed, load play screen
@@ -81,29 +109,21 @@ function draw(){
 
 	//load game over screen immediately after timer runs out
 	if(gameOverScreen){
-		background(0, 255, 255);
+		menuScreen = false;		
+		background(76, 155, 210);
 		textSize(50);
-		text("Game Over", 720/3, 480/2);
+		text("Game Over", 720/3, 480/3);
 
 		//back to menu screen button
-		noStroke();
+		strokeWeight(1);
 		textSize(30);
+		stroke(255);
 		fill(235, 154, 89);
 		rect(720/2.52, 300, 150, 50);
 		fill(255);
-		text("Menu", 720/2.2, 330);
+		text("Menu", 720/2.2, 335);
 	}
 
-	//if about button is pressed, load how to play screen
-	if(aboutScreen == true){
-		background(0, 0, 255);
-
-		text("How to play", 720/8, 100);
-		textSize(20);		
-		text("These Jellyfish accidentally washed up by the shore! \n Help catch them inside jars to release in open water!\n Click on each jellyfish to trap inside a jar.",
-		720/8, 200);
-
-	}
 }
 
 function mousePressed(){
@@ -115,10 +135,18 @@ function mousePressed(){
 		(mouseY >= 160) && (mouseY <= 160 + 50)){
 			playScreen = true;
 	}
-	else if((mouseX >= 720/1.5) && (mouseX <= 720/1.5 + 150) &&
-		(mouseY >= 260) && (mouseY <= 260 + 50)){
+	else if((playScreen == false) && ((mouseX >= 720/1.5) && (mouseX <= 720/1.5 + 150) &&
+		(mouseY >= 260) && (mouseY <= 260 + 50))){
 			aboutScreen = true;
-		}
+	}
+	else if((gameOverScreen == true) && ((mouseX >= 720/2.52) && (mouseX <= 720/2.52 + 150) && 
+		(mouseY >= 300) && (mouseY <= 300 + 50))){
+			menuScreen = true;
+	}
+	else if((aboutScreen == true) && (mouseX >= 30) && (mouseX <= 58) &&
+		(mouseY >= 395) && (mouseY <= 450)){
+			menuScreen = true;
+	}
 }
 
 function mouseReleased(){
@@ -174,7 +202,7 @@ function Walker(imageName, x, y, moving){
 				image(this.spritesheet, 0, 0, 80, 80, 560, 0, 80, 80);
 			if(this.frame == 7)
 				image(this.spritesheet, 0, 0, 80, 80, 640, 0, 80, 80);
-			if(frameCount % 8 == 0){
+			if(frameCount % 6 == 0){
 				this.frame = (this.frame + 1) % 7;
 				this.x = this.x + 6 * this.moving;
 				if(this.x < 40 || this.x > width - 40){
