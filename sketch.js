@@ -6,7 +6,6 @@ var menuScreen = false;
 var gameOverScreen = false;
 var playScreen = false;
 var aboutScreen = false;
-var playTime = false;
 var clickJelly, menuJelly, captureJelly, arrow, jellyCount, jellyCountLeft, speed;
 
 function preload(){
@@ -72,18 +71,19 @@ function draw(){
 		720/8, 220);
 
 		triangle(30, 425, 58, 395, 58, 450);
-		text("Back \nto Menu", 70, 418);
+		text("Refresh to go \nback to Menu", 70, 418);
 	}
 
 	//if play button is pressed, load play screen
 	if(playScreen){
 		
-		background(0, 255, 255);
+		background(0, 221, 255);
 
 		for (var i = 0; i < count; i++){
 			guy[i].draw();
 		}
-
+		seconds = startTime - millis()/1000;
+		
 		//number of bugs displayed on screen in the upper left corner
 		stroke(255);
 		strokeWeight(4);
@@ -97,36 +97,31 @@ function draw(){
 		textSize(20);
 		fill(0);
 
-		if(playTime){
-			seconds = startTime - millis()/1000;
-			if(seconds < 0 || count == 0){
-				//once the timer runs out, the game over screen will appear
-				gameOverScreen = true;
-			}
-			else{
-				text("Timer:  " + round(seconds), 10, 40);
-			}
+		if(seconds < 0 || count == 0){
+			//once the timer runs out, the game over screen will appear
+			gameOverScreen = true;
+		}
+		else{
+			text("Timer:  " + round(seconds), 10, 40);
 		}
 	
 	}
 
 	//load game over screen immediately after timer runs out
 	if(gameOverScreen || jellyCountLeft <= 0){
-		menuScreen = false;		
 		background(76, 155, 210);
 		textSize(50);
 		text("Game Over", 720/3, 480/3);
 
-		//back to menu screen button
 		strokeWeight(1);
 		textSize(30);
-		stroke(255);
-		fill(235, 154, 89);
-		rect(720/2.52, 300, 150, 50);
 		fill(255);
-		text("Menu", 720/2.2, 335);
-
 		text("You've captured: " + jellyCount + " Jellyfish", 720/3.7, 480/2);
+
+		textSize(20);
+		triangle(30, 425, 58, 395, 58, 450);
+		text("Refresh to go \nback to Menu", 70, 418);
+
 	}
 
 }
@@ -138,7 +133,7 @@ function mousePressed(){
 	if((mouseX >= 720/1.5) && (mouseX <= 720/1.5 + 150) &&
 		(mouseY >= 160) && (mouseY <= 160 + 50)){
 			playScreen = true;
-			playTime = true;
+			startTime = millis()/1000 + timer;
 	}
 	else if((playScreen == false) && ((mouseX >= 720/1.5) && (mouseX <= 720/1.5 + 150) &&
 		(mouseY >= 260) && (mouseY <= 260 + 50))){
@@ -207,8 +202,8 @@ function Walker(imageName, x, y, moving){
 	}
 
 	this.grab = function(x, y){
-		if(this.x - 40 < x && x < this.x + 40 &&
-			this.y - 40 < y && y < this.y + 40){
+		if(this.x - 20 < x && x < this.x + 20 &&
+			this.y - 20 < y && y < this.y + 20){
 			this.stop();
 			this.mouseX = x;
 			this.mouseY = y;
@@ -216,7 +211,7 @@ function Walker(imageName, x, y, moving){
 			this.initialY = this.y;
 			speed += 3;
 			jellyCount += 1;
-			jellyCountLeft = jellyCountLeft - 1;
+			jellyCountLeft -= 1;
 		}
 	}
 
