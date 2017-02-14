@@ -215,17 +215,6 @@ function Walker(imageName, x, y, moving){
 		}
 	}
 
-	this.drag = function(x, y){
-		if(this.moving == 0){
-			this.x = (x - this.mouseX) + this.initialX;
-			this.y = (y - this.mouseY) + this.initialY;
-		}
-	}
-
-	this.drop = function(){
-		this.go(this.facing);
-	}
-
 	this.stop = function(){
 		this.moving = 0;
 	}
